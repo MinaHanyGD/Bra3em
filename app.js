@@ -115,4 +115,26 @@ function init(){
 document.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o)openKid(o.dataset.open);if(e.target.id==='modal'||e.target.closest('#mx'))closeM()});
 addEventListener('keydown',e=>e.key==='Escape'&&closeM());
 async function boot(first){try{await load();if(first)init();route()}catch(e){view.innerHTML=`<div class="card empty" style="padding:34px">${ic('alert')}<h2 style="justify-content:center;margin:0">حصلت مشكلة</h2><p class="sub" style="line-height:2">${esc(e.message)}<br>لو بتفتح الملف من الكمبيوتر مباشرة (file://) لازم يتفتح من GitHub Pages أو سيرفر محلي.</p></div>`}$('#splash').classList.add('off')}
-$('#rf').onclick=()=>{$('#splash').classList.remove('off');boot(false)};boot(true);
+/* ---------------- كلمة السر اليومية: (تاريخ اليوم)@Bra3em ---------------- */
+const PW_TAG='@bra3em';
+const cairoNow=()=>{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p};
+const dayKey=()=>{const t=cairoNow();return t.year+'-'+t.month+'-'+t.day};
+const toEn=s=>s.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+// الصيغة الأساسية: 26102026@Bra3em  (اليوم+الشهر+السنة) — بيقبل كمان 26-10-2026 و 2026-10-26 و 26/10
+function pwOk(inp){const s=toEn(String(inp||'').trim());if(!s.toLowerCase().endsWith(PW_TAG))return false;
+ const head=s.slice(0,-PW_TAG.length).trim();if(!head||!/^[\d\s\/\-.]+$/.test(head))return false;
+ const t=cairoNow(),d=t.day,m=t.month,y=t.year,dn=String(+d),mn=String(+m);
+ return [d+m+y,y+m+d,d+m,dn+mn+y].includes(head.replace(/\D/g,''))}
+const unlocked=()=>{try{return localStorage.getItem('b3_unlock')===dayKey()}catch(e){return false}};
+const setUnlock=()=>{try{localStorage.setItem('b3_unlock',dayKey())}catch(e){}};
+const lock=()=>{try{localStorage.removeItem('b3_unlock')}catch(e){}location.reload()};
+function start(){$('#gate').hidden=true;$('#splash').classList.remove('off');boot(true);
+ // لو اليوم اتغيّر والموقع مفتوح، يقفل ويطلب الباسورد الجديد
+ setInterval(()=>{if(!unlocked())location.reload()},60000)}
+function showGate(){$('#splash').classList.add('off');$('#gate').hidden=false;$('#gp').focus();
+ $('#gf').onsubmit=e=>{e.preventDefault();const v=$('#gp').value;
+  if(pwOk(v)){setUnlock();start()}
+  else{const f=$('#gf');$('#ge').textContent='كلمة السر غلط، جرّب تاني';$('#gp').select();f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake')}}}
+$('#rf').onclick=()=>{$('#splash').classList.remove('off');boot(false)};
+$('#lk').onclick=lock;
+unlocked()?start():showGate();

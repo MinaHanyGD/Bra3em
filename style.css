@@ -53,8 +53,8 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 #nav a:hover{color:var(--ink);background:var(--surface-2)}
 #nav a.on{color:var(--p-ink);background:var(--p-soft);font-weight:600}
 .tools{display:flex;gap:8px;align-items:center}
-#rf{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;color:var(--ink-2);transition:background .2s}
-#rf:hover{background:var(--surface-2)}
+#rf,#lk{width:40px;height:40px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;color:var(--ink-2);transition:background .2s}
+#rf:hover,#lk:hover{background:var(--surface-2)}
 #rf:active .ic{transform:rotate(180deg);transition:transform .4s}
 
 /* ---------- الأزرار ---------- */
@@ -214,3 +214,15 @@ tfoot td:first-child{z-index:4}
   #modal{padding:0}.sheet{border-radius:24px 24px 0 0;align-self:end;max-height:92vh}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.ring .fg{stroke-dashoffset:var(--o)}.bar i{transform:none}}
+
+/* ---------- شاشة كلمة السر ---------- */
+#gate{position:fixed;inset:0;z-index:98;background:var(--bg);display:grid;place-items:center;padding:18px}
+#gate[hidden]{display:none}
+.gcard{width:min(380px,100%);padding:32px 26px;display:grid;justify-items:center;gap:14px;text-align:center}
+.gcard h1{font-size:26px;font-weight:700}
+.gcard input{width:100%;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:10px 14px;min-height:48px;color:var(--ink);font:inherit;font-size:16px;text-align:center;letter-spacing:.04em}
+.gcard input:focus{outline:0;border-color:var(--p);box-shadow:0 0 0 3px color-mix(in srgb,var(--p) 22%,transparent)}
+.gcard .b{width:100%;min-height:46px;font-size:15px}
+.ge{color:var(--bad);font-size:13.5px;min-height:1.4em}
+.gcard.shake{animation:shk .35s}
+@keyframes shk{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}

@@ -41,6 +41,7 @@
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></symbol>
 <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5M12 15v2"/></symbol>
 <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></symbol>
 </svg>
 
@@ -49,10 +50,22 @@
   <p>جاري تحميل البيانات…</p>
 </div>
 
+<div id="gate" hidden>
+  <form class="gcard card" id="gf" autocomplete="off">
+    <div class="lg"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></div>
+    <h1>خدمة براعم</h1>
+    <p class="sub">اكتب كلمة السر للدخول</p>
+    <input id="gp" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="كلمة السر" placeholder="••••••••">
+    <button class="b pri" type="submit">دخول</button>
+    <p id="ge" class="ge" role="alert"></p>
+  </form>
+</div>
+
 <header class="top">
   <a class="brand" href="#home"><b><svg class="ic" aria-hidden="true"><use href="#i-sprout"/></svg></b><span>خدمة براعم</span></a>
   <nav id="nav" aria-label="التنقل الرئيسي"></nav>
   <div class="tools">
+    <button id="lk" title="قفل" aria-label="قفل الموقع"><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg></button>
     <button id="rf" title="تحديث البيانات" aria-label="تحديث البيانات"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg></button>
     <a id="dl" class="b pri" download aria-label="تحميل ملف الإكسيل"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg><span>ملف الإكسيل</span></a>
   </div>
