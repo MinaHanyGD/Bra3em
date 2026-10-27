@@ -47,7 +47,7 @@ async function photosOf(buf){const out={};try{
 async function load(){
  const res=await fetch(FILE+'?v='+Date.now());if(!res.ok)throw Error('تعذّر تحميل ملف الإكسيل ('+res.status+'). تأكد إن اسم الملف '+FILE+' ومرفوع جنب index.html');
  const lm=res.headers.get('last-modified');LM=lm?new Date(lm).toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'}):'';
- const buf=await res.arrayBuffer();RAW={wb:XLSX.read(buf,{type:'array'}),photos:await photosOf(buf)};PEND=loadPend();build()}
+ const buf=await res.arrayBuffer();RAW={buf,wb:XLSX.read(buf,{type:'array'}),photos:await photosOf(buf)};PEND=loadPend();build()}
 function build(){const wb=RAW.wb,photos=RAW.photos;
  const S=wb.Sheets['الإعدادات'],B=wb.Sheets['قاعدة البيانات'];
  const classes=[],days=[],years=[];
@@ -82,13 +82,15 @@ const card=k=>{const t=TIER[k.tier];return`<article class="card kid rv ${k.g==='
 const chips=(sel,pre,suf='')=>`<div class="chips">${D.classes.map((c,i)=>`<a href="#${pre}/${encodeURIComponent(c)}${suf}" class="${c===sel?'on':''}" style="--c:${CC[i]}">${esc(c)}</a>`).join('')}</div>`;
 const sw=(a,c)=>D.classes.includes(a)?a:D.classes[0];
 
+function autoAbsent(c,j){if(dk(D.dates[j])>dayKey())return;let ch=0;
+ D.cls[c].ks.slice(0,30).forEach(k=>{if(k.active&&k.att[j]===''){PEND.att[k.cls+'|'+k.name+'|'+dk(D.dates[j])]={v:'غ',t:Date.now()};ch=1}});if(ch){savePend();build()}}
 function recBody(){const {c,j}=RC,o=D.cls[c],ks=o.ks.filter(k=>k.active);
  const cn=v=>ks.filter(k=>k.att[j]===v).length,left=ks.length-cn('ح')-cn('غ')-cn('ع');
  return`<div class="card info"><span>حاضر: <b>${cn('ح')}</b></span><span>غائب: <b>${cn('غ')}</b></span><span>معتذر: <b>${cn('ع')}</b></span><span>لسه: <b>${left}</b></span></div><div class="rl">${ks.map(k=>`<div class="card rr ${k.g==='بنت'?'f':''}"><div class="av">${av(k)}</div><div class="rn"><b>${esc(k.name)}</b>${k.pd[j]?'<small>لسه ما اتنقلش للإكسيل</small>':''}</div><div class="seg" role="group" aria-label="حضور ${esc(k.name)}">${[['ح','ok','حاضر'],['غ','no','غائب'],['ع','ex','معتذر']].map(([v,cl,t])=>`<button class="sg ${cl}${k.att[j]===v?' on':''}" data-set="${v}" data-r="${k.row}" data-j="${j}" aria-pressed="${k.att[j]===v}" aria-label="${t}: ${esc(k.name)}">${v}</button>`).join('')}</div></div>`).join('')||`<div class="empty">${ic('users')}مفيش أطفال نشطين في الفصل ده</div>`}</div>`}
 const renderRec=()=>{const e=$('#rl');if(e)e.innerHTML=recBody()};
 const V={
-rec(a,b){const c=sw(a),j=(b!=null&&D.dates[+b])?+b:defJ();RC={c,j};
- return`<h2>${ic('check')}تسجيل الحضور</h2>${chips(c,'rec','/'+j)}<div class="tb"><select id="rd" aria-label="تاريخ الاجتماع">${D.dates.map((x,i)=>`<option value="${i}" ${i===j?'selected':''}>${fdl(x)}${i===D.now?' (الأسبوع ده)':''}</option>`).join('')}</select><a class="b" href="#sync">${ic('download')}نقل للإكسيل</a></div><p class="sub" style="margin-bottom:12px">دوس على ح / غ / ع — بيتحفظ فورًا على الجهاز ده. دوسة تانية على نفس الحرف بتمسحه.</p><div id="rl">${recBody()}</div>`},
+rec(a,b){const c=sw(a),j=(b!=null&&D.dates[+b])?+b:defJ();autoAbsent(c,j);RC={c,j};
+ return`<h2>${ic('check')}تسجيل الحضور</h2>${chips(c,'rec','/'+j)}<div class="tb"><select id="rd" aria-label="تاريخ الاجتماع">${D.dates.map((x,i)=>`<option value="${i}" ${i===j?'selected':''}>${fdl(x)}${i===D.now?' (الأسبوع ده)':''}</option>`).join('')}</select><a class="b" href="#sync">${ic('download')}نقل للإكسيل</a></div><p class="sub" style="margin-bottom:12px">كل الأطفال بيتسجلوا غايبين تلقائي (للتواريخ اللي جات)، وانت دوس ح لمن حضر أو ع للمعتذر. بيتحفظ فورًا على الجهاز ده. دوسة تانية على نفس الحرف بتمسحه.</p><div id="rl">${recBody()}</div>`},
 sync(){CP={};let n=0;const cp=t=>{const id='c'+(++n);CP[id]=t;return id};
  const na=Object.keys(PEND.att).length,nn=PEND.notes.length,empty=`<div class="card empty">${ic('checkc')}مفيش حاجة مستنية</div>`;let att='';
  D.classes.forEach(c=>{const o=D.cls[c];D.dates.forEach((dt,j)=>{const ch=o.ks.filter(k=>k.pd[j]);if(!ch.length)return;const col=XLSX.utils.encode_col(9+j),ks=o.ks.slice(0,30);
@@ -96,7 +98,7 @@ sync(){CP={};let n=0;const cp=t=>{const id='c'+(++n);CP[id]=t;return id};
  const kn=D.kids.filter(k=>k.pn.length);let nt='';
  if(kn.length){const B=RAW.wb.Sheets['قاعدة البيانات'],last=Math.max(...D.kids.map(k=>k.row)),rows=[];for(let r=6;r<=last;r++){const k=D.kids.find(x=>x.row===r);rows.push(q(k?comb(k):String(cell(B,r,12)??'')))}
   nt=`<div class="card sy rv"><div><h3>عمود الملاحظات كله</h3><p class="sub">شيت «قاعدة البيانات» · عمود <b dir="ltr">L</b> · الصق من <b dir="ltr">L6</b> (فيه القديم + الجديد)</p></div><button class="b pri" data-copy="${cp(rows.join('\n'))}">${ic('list')}نسخ العمود</button></div>`+kn.map(k=>`<div class="card sy rv"><div><h3>${esc(k.name)}</h3><p class="sub">${esc(k.cls)} · الخلية <b dir="ltr">L${k.row}</b></p></div><div class="pn">${k.pn.map(x=>`<p><span class="d">${esc(x.date)}</span> ${esc(x.text)}</p>`).join('')}</div><button class="b" data-copy="${cp(q(comb(k)))}">${ic('note')}نسخ الملاحظة كاملة</button></div>`).join('')}
- return`<h2>${ic('download')}نقل التسجيلات للإكسيل</h2><div class="card info rv"><span>حضور لسه ما اتنقلش: <b>${na}</b></span><span>ملاحظات: <b>${nn}</b></span></div>${na+nn?`<div class="note">${ic('alert')}<span>انسخ، الصق في الإكسيل في الخلية المكتوبة، احفظ وارفع الملف على GitHub. التسجيلات بتتشال من هنا لوحدها أول ما الموقع يقرا الملف الجديد. وهي محفوظة على الجهاز والمتصفح ده بس.</span></div>`:''}<h2>${ic('calendar')}الحضور</h2>${att||empty}<h2>${ic('note')}الملاحظات</h2>${nt||empty}${na+nn?`<div style="margin-top:22px"><button class="b" data-clearall>${ic('close')}مسح كل التسجيلات</button></div>`:''}`},
+ return`<h2>${ic('download')}نقل التسجيلات للإكسيل</h2><div class="card info rv"><span>حضور لسه ما اتنقلش: <b>${na}</b></span><span>ملاحظات: <b>${nn}</b></span></div>${na+nn?`<div class="card sy rv"><div><h3>${ic('download')}الطريقة السريعة</h3><p class="sub" style="line-height:1.9">حمّل الإكسيل وفيه كل التسجيلات والملاحظات متحطوطة في أماكنها (الصور والتنسيق زي ما هم)، وارفعه على GitHub بنفس الاسم. بعدها التسجيلات بتتشال من هنا لوحدها. ملحوظة: التسجيلات محفوظة على الجهاز والمتصفح ده بس.</p></div><button class="b pri" data-xlsx>${ic('download')}تحميل الإكسيل محدّث</button></div>${recCard()}<div class="note">${ic('alert')}<span>أو لو عايز تلصق بإيدك: انسخ من الأزرار اللي تحت والصق في الخلية المكتوبة.</span></div>`:''}<h2>${ic('calendar')}الحضور</h2>${att||empty}<h2>${ic('note')}الملاحظات</h2>${nt||empty}${na+nn?`<div style="margin-top:22px"><button class="b" data-clearall>${ic('close')}مسح كل التسجيلات</button></div>`:''}`},
 home(){const a=D.kids.filter(k=>k.active),P=D.kids.reduce((s,k)=>s+k.P,0),Ab=D.kids.reduce((s,k)=>s+k.A,0),avg=P+Ab?P/(P+Ab):null;
  const st=[['users','المسجلين',D.kids.length],['checkc','النشطين',a.length],['user','أولاد',a.filter(k=>k.g==='ولد').length],['user','بنات',a.filter(k=>k.g==='بنت').length],['calendar','جمع مسجلة',D.meet],['alert','محتاجين افتقاد',D.kids.filter(k=>k.tier==3||k.tier==4).length,'warn']];
  let last=D.tot.map(x=>x.any).lastIndexOf(true);const mx=Math.max(1,...D.tot.map(x=>x.p));
@@ -183,4 +185,86 @@ document.addEventListener('click',e=>{
  const cb=e.target.closest('[data-copy]');
  if(cb){copyTxt(CP[cb.dataset.copy]).then(()=>{const o=cb.innerHTML;cb.innerHTML=ic('check')+'تم النسخ';setTimeout(()=>cb.innerHTML=o,1600)});return}
  if(e.target.closest('[data-clearall]')&&confirm('تمسح كل الحضور والملاحظات اللي لسه ما اتنقلتش للإكسيل؟')){PEND={att:{},notes:[]};savePend();build();route()}
+});
+
+/* ---------- تحميل الإكسيل وفيه التسجيلات (بيعدّل الخلايا بس ويسيب باقي الملف زي ما هو) ---------- */
+const xe=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const colNum=ref=>{let n=0;for(const ch of ref.match(/^[A-Z]+/)[0])n=n*26+ch.charCodeAt(0)-64;return n};
+function setCell(xml,ref,val){
+ const m=xml.match(new RegExp('<c r="'+ref+'"(?:\\s[^>]*?)?(?:/>|>[\\s\\S]*?</c>)')),sm=m&&m[0].match(/^<c[^>]*?\ss="(\d+)"/),sa=sm?' s="'+sm[1]+'"':'';
+ const nc=val===''?'<c r="'+ref+'"'+sa+'/>':'<c r="'+ref+'"'+sa+' t="inlineStr"><is><t xml:space="preserve">'+xe(val)+'</t></is></c>';
+ if(m)return xml.replace(m[0],()=>nc);
+ const rn=ref.match(/\d+/)[0],rm=xml.match(new RegExp('<row r="'+rn+'"[^>]*?[^/]>([\\s\\S]*?)</row>'));if(!rm)return null;
+ let at=-1,cn=colNum(ref),re=/<c r="([A-Z]+)\d+"/g,t;while((t=re.exec(rm[1]))){if(colNum(t[1])>cn){at=t.index;break}}
+ const inner=at<0?rm[1]+nc:rm[1].slice(0,at)+nc+rm[1].slice(at);
+ return xml.replace(rm[0],()=>rm[0].replace(rm[1],()=>inner));
+}
+async function exportXlsx(btn){
+ const old=btn.innerHTML;btn.disabled=true;btn.textContent='جاري التجهيز…';
+ try{
+  const z=await JSZip.loadAsync(RAW.buf),rd=p=>z.file(p).async('string'),px=async p=>new DOMParser().parseFromString(await rd(p),'text/xml');
+  const wbx=await px('xl/workbook.xml'),rels=await px('xl/_rels/workbook.xml.rels');
+  const path=name=>{const s=[...wbx.getElementsByTagName('sheet')].find(s=>s.getAttribute('name')===name);if(!s)throw Error('مش لاقي شيت '+name);
+   const r=[...rels.getElementsByTagName('Relationship')].find(r=>r.getAttribute('Id')===s.getAttribute('r:id'));return 'xl/'+r.getAttribute('Target').replace(/^\/?(xl\/)?/,'')};
+  const ed={};const add=(sh,ref,v)=>(ed[sh]=ed[sh]||[]).push([ref,v]);
+  D.classes.forEach(c=>D.cls[c].ks.slice(0,30).forEach((k,i)=>k.pd.forEach((p,j)=>{if(p)add('حضور '+c,XLSX.utils.encode_col(9+j)+(7+i),k.att[j])})));
+  D.kids.filter(k=>k.pn.length).forEach(k=>add('قاعدة البيانات','L'+k.row,comb(k)));
+  let done=0,skip=0;
+  for(const sh in ed){const p=path(sh);let x=await rd(p);for(const [ref,v] of ed[sh]){const r=setCell(x,ref,v);if(r==null)skip++;else{x=r;done++}}z.file(p,x,{createFolders:false})}
+  let w=await rd('xl/workbook.xml');if(!/fullCalcOnLoad/.test(w))w=w.replace('<calcPr ','<calcPr fullCalcOnLoad="1" ');z.file('xl/workbook.xml',w,{createFolders:false});
+  const blob=await z.generateAsync({type:'blob',compression:'DEFLATE',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const u=URL.createObjectURL(blob),l=document.createElement('a');l.href=u;l.download=FILE;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+  if(skip)alert('اتحطّ '+done+' خانة، و'+skip+' خانة ما اتحطتش — استخدم النسخ اليدوي ليهم.');
+  btn.innerHTML=old;
+ }catch(err){alert('حصلت مشكلة في تجهيز الملف: '+err.message+'\nاستخدم النسخ اليدوي.');btn.innerHTML=old}
+ btn.disabled=false}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-xlsx]');if(b)exportXlsx(b)});
+
+/* ---------- ملف مستقل بالأسماء والحضور والتواريخ (على الجهاز أو GitHub) ---------- */
+const GHK='b3_gh';
+const ghCfg=()=>{try{return JSON.parse(localStorage.getItem(GHK))||{}}catch(e){return{}}};
+const ghGuess=()=>location.hostname.endsWith('.github.io')?location.hostname.split('.')[0]+'/'+(location.pathname.split('/')[1]||location.hostname):'';
+const stamp=()=>{const t=cairoNow(),h=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).replace(':','-');return t.year+'-'+t.month+'-'+t.day+'_'+h};
+function recordsCSV(){
+ const order={};D.kids.forEach(k=>order[k.cls+'|'+k.name]=k.row);
+ const tm=t=>t?new Date(t).toLocaleString('en-GB',{timeZone:'Africa/Cairo',hour12:false}):'';
+ const st={'ح':'حاضر','غ':'غائب','ع':'معتذر','':'مسح'},cs=v=>'"'+String(v).replace(/"/g,'""')+'"';
+ const att=Object.entries(PEND.att).map(([key,p])=>{const parts=key.split('|'),iso=parts.pop(),cls=parts.shift(),name=parts.join('|');return{iso,cls,name,row:order[cls+'|'+name]||0,v:p.v,t:p.t}})
+  .sort((x,y)=>x.iso.localeCompare(y.iso)||x.cls.localeCompare(y.cls,'ar')||x.row-y.row)
+  .map(x=>['حضور',noteDate(x.iso),new Date(x.iso).toLocaleDateString('ar-EG',{weekday:'long',timeZone:'UTC'}),x.cls,x.name,st[x.v],tm(x.t)]);
+ const nts=PEND.notes.map(n=>{const i=n.key.indexOf('|');return['ملاحظة',n.date,'',n.key.slice(0,i),n.key.slice(i+1),n.text,tm(n.t)]});
+ return'﻿'+[['النوع','التاريخ','اليوم','الفصل','الاسم','الحالة / الملاحظة','وقت التسجيل'],...att,...nts].map(r=>r.map(cs).join(',')).join('\r\n')}
+function recordsWB(){
+ const order={};D.kids.forEach(k=>order[k.cls+'|'+k.name]=k.row);
+ const tm=t=>t?new Date(t).toLocaleString('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'short',timeStyle:'short'}):'';
+ const st={'ح':'حاضر','غ':'غائب','ع':'معتذر','':'مسح'};
+ const att=Object.entries(PEND.att).map(([key,p])=>{const parts=key.split('|'),iso=parts.pop(),cls=parts.shift(),name=parts.join('|');
+  return{iso,cls,name,row:order[cls+'|'+name]||0,v:p.v,t:p.t}}).sort((x,y)=>x.iso.localeCompare(y.iso)||x.cls.localeCompare(y.cls,'ar')||x.row-y.row)
+  .map(x=>({'التاريخ':noteDate(x.iso),'اليوم':new Date(x.iso).toLocaleDateString('ar-EG',{weekday:'long',timeZone:'UTC'}),'الفصل':x.cls,'الاسم':x.name,'الحالة':st[x.v],'وقت التسجيل':tm(x.t)}));
+ const nts=PEND.notes.map(n=>{const i=n.key.indexOf('|');return{'تاريخ الملاحظة':n.date,'الفصل':n.key.slice(0,i),'الاسم':n.key.slice(i+1),'الملاحظة':n.text,'وقت التسجيل':tm(n.t)}});
+ const wb=XLSX.utils.book_new(),mk=(rows,hd,w)=>{const ws=XLSX.utils.json_to_sheet(rows,{header:hd});ws['!cols']=w.map(x=>({wch:x}));return ws};
+ XLSX.utils.book_append_sheet(wb,mk(att,['التاريخ','اليوم','الفصل','الاسم','الحالة','وقت التسجيل'],[12,10,12,34,10,20]),'الحضور');
+ XLSX.utils.book_append_sheet(wb,mk(nts,['تاريخ الملاحظة','الفصل','الاسم','الملاحظة','وقت التسجيل'],[14,12,34,60,20]),'الملاحظات');
+ wb.Workbook={Views:[{RTL:true}]};return wb}
+function recCard(){const c=ghCfg(),ok=c.repo&&c.token;
+ return`<div class="card sy rv"><div><h3>${ic('list')}ملف مستقل بالأسماء والحضور والتواريخ</h3><p class="sub" style="line-height:1.9">ملف إكسيل لوحده فيه كل اللي سجلته (الاسم، الفصل، التاريخ واليوم، الحالة، الملاحظات، ووقت التسجيل) من غير ما يلمس ملف النظام. تحفظه على الجهاز أو ترفعه على GitHub في فولدر <b dir="ltr">records</b>، وتنقله للنظام بعدين وقت ما تحب.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b pri" data-rec="dev">${ic('download')}حفظ على الجهاز (إكسيل)</button><button class="b" data-rec="csv">${ic('download')}ملف CSV عادي</button><button class="b" data-rec="gh">${ic('upload')}رفع على GitHub</button></div><p id="ghs" class="sub" role="status" aria-live="polite"></p>
+ <details id="ghd"><summary class="sub" style="cursor:pointer">${ok?'إعداد GitHub متظبط ✓ (تعديل)':'إعداد GitHub (مرة واحدة)'}</summary><div class="addn"><input id="ghr" dir="ltr" placeholder="اسم-الحساب/اسم-الريبو" value="${esc(c.repo||ghGuess())}" aria-label="الريبو"><input id="ght" type="password" dir="ltr" autocomplete="off" placeholder="${c.token?'التوكن محفوظ — اكتب جديد لتغييره':'التوكن (Personal access token)'}" aria-label="التوكن"><button class="b" data-ghsave>حفظ الإعداد</button>${ok?'<button class="b" data-ghclear>مسح الإعداد</button>':''}<p class="sub" style="line-height:1.9">GitHub ← Settings ← Developer settings ← Fine-grained tokens ← Generate: اختار الريبو ده بس، وصلاحية <b dir="ltr">Contents: Read and write</b>. التوكن بيتحفظ في المتصفح ده بس، ماتحطوش في أي ملف على الموقع.</p></div></details></div>`}
+document.addEventListener('click',async e=>{
+ const r=e.target.closest('[data-rec]');
+ if(r){const name='bara3em_'+stamp()+'.xlsx',msg=$('#ghs');
+  if(!Object.keys(PEND.att).length&&!PEND.notes.length){msg.textContent='مفيش تسجيلات لسه.';return}
+  if(r.dataset.rec==='csv'){const u=URL.createObjectURL(new Blob([recordsCSV()],{type:'text/csv;charset=utf-8'})),l=document.createElement('a');l.href=u;l.download=name.replace('.xlsx','.csv');document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);msg.textContent='اتحفظ على الجهاز: '+name.replace('.xlsx','.csv');return}
+  if(r.dataset.rec==='dev'){XLSX.writeFile(recordsWB(),name);msg.textContent='اتحفظ على الجهاز: '+name;return}
+  const c=ghCfg();if(!c.repo||!c.token){$('#ghd').open=true;msg.textContent='ظبّط إعداد GitHub الأول (تحت).';return}
+  r.disabled=true;msg.textContent='جاري الرفع…';
+  try{const body=XLSX.write(recordsWB(),{bookType:'xlsx',type:'base64'});
+   const res=await fetch('https://api.github.com/repos/'+c.repo+'/contents/records/'+name,{method:'PUT',headers:{'Authorization':'Bearer '+c.token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify({message:'تسجيلات '+stamp(),content:body})});
+   if(res.ok)msg.textContent='اترفع على GitHub: records/'+name;
+   else{const why=res.status===401?'التوكن غلط أو منتهي':res.status===403?'التوكن مالوش صلاحية كتابة':res.status===404?'اسم الريبو غلط أو التوكن مش مديله صلاحية عليه':'خطأ '+res.status;msg.textContent='ما اترفعش: '+why+'. تقدر تحفظ على الجهاز بدل كده.'}
+  }catch(err){msg.textContent='ما اترفعش (النت؟). احفظ على الجهاز بدل كده.'}
+  r.disabled=false;return}
+ if(e.target.closest('[data-ghsave]')){const c=ghCfg(),repo=$('#ghr').value.trim(),tk=$('#ght').value.trim()||c.token||'';
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){$('#ghs').textContent='اكتب الريبو بالشكل: اسم-الحساب/اسم-الريبو';return}
+  try{localStorage.setItem(GHK,JSON.stringify({repo,token:tk}))}catch(_){}route();$('#ghs').textContent='اتحفظ الإعداد ✓';return}
+ if(e.target.closest('[data-ghclear]')){try{localStorage.removeItem(GHK)}catch(_){}route()}
 });
