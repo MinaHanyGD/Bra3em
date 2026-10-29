@@ -86,7 +86,7 @@ function autoAbsent(c,j){if(dk(D.dates[j])>dayKey())return;let ch=0;
  D.cls[c].ks.slice(0,30).forEach(k=>{if(k.active&&k.att[j]===''){PEND.att[k.cls+'|'+k.name+'|'+dk(D.dates[j])]={v:'غ',t:Date.now()};ch=1}});if(ch){savePend();build()}}
 function recBody(){const {c,j}=RC,o=D.cls[c],ks=o.ks.filter(k=>k.active);
  const cn=v=>ks.filter(k=>k.att[j]===v).length,left=ks.length-cn('ح')-cn('غ')-cn('ع');
- return`<div class="card info"><span>حاضر: <b>${cn('ح')}</b></span><span>غائب: <b>${cn('غ')}</b></span><span>معتذر: <b>${cn('ع')}</b></span><span>لسه: <b>${left}</b></span></div><div class="rl">${ks.map(k=>`<div class="card rr ${k.g==='بنت'?'f':''}"><div class="av">${av(k)}</div><div class="rn"><b>${esc(k.name)}</b>${k.pd[j]?'<small>لسه ما اتنقلش للإكسيل</small>':''}</div><div class="seg" role="group" aria-label="حضور ${esc(k.name)}">${[['ح','ok','حاضر'],['غ','no','غائب'],['ع','ex','معتذر']].map(([v,cl,t])=>`<button class="sg ${cl}${k.att[j]===v?' on':''}" data-set="${v}" data-r="${k.row}" data-j="${j}" aria-pressed="${k.att[j]===v}" aria-label="${t}: ${esc(k.name)}">${v}</button>`).join('')}</div></div>`).join('')||`<div class="empty">${ic('users')}مفيش أطفال نشطين في الفصل ده</div>`}</div>`}
+ return`<div class="card info"><span>حاضر: <b>${cn('ح')}</b></span><span>غائب: <b>${cn('غ')}</b></span><span>معتذر: <b>${cn('ع')}</b></span><span>لسه: <b>${left}</b></span></div><div class="rl">${ks.map(k=>`<div class="card rr ${k.g==='بنت'?'f':''}"><div class="av">${av(k)}</div><div class="rn"><b>${esc(k.name)}</b>${k.pd[j]?'<small>لسه ما اتنقلش للإكسيل</small>':''}<button class="b sm nb" data-note="${k.row}" aria-label="ملاحظة عن ${esc(k.name)}">${ic('note')}ملاحظة${k.pn.length?' ('+k.pn.length+')':''}</button></div><div class="seg" role="group" aria-label="حضور ${esc(k.name)}">${[['ح','ok','حاضر'],['غ','no','غائب'],['ع','ex','معتذر']].map(([v,cl,t])=>`<button class="sg ${cl}${k.att[j]===v?' on':''}" data-set="${v}" data-r="${k.row}" data-j="${j}" aria-pressed="${k.att[j]===v}" aria-label="${t}: ${esc(k.name)}">${v}</button>`).join('')}</div></div>`).join('')||`<div class="empty">${ic('users')}مفيش أطفال نشطين في الفصل ده</div>`}</div>`}
 const renderRec=()=>{const e=$('#rl');if(e)e.innerHTML=recBody()};
 const V={
 rec(a,b){const c=sw(a),j=(b!=null&&D.dates[+b])?+b:defJ();autoAbsent(c,j);RC={c,j};
@@ -122,7 +122,7 @@ function renderKids(){const q=$('#q').value.trim().toLowerCase(),f=id=>$(id).val
  const l=D.kids.filter(k=>(!f('#fc')||k.cls===f('#fc'))&&(!f('#fg')||k.g===f('#fg'))&&(!f('#fy')||k.year===f('#fy'))&&(!f('#fs')||k.active==(f('#fs')==='1'))&&(!q||[k.name,k.mom,k.dad,k.addr,k.id,k.notes].join(' ').toLowerCase().includes(q)));
  $('#cn').textContent='النتائج: '+l.length+' من '+D.kids.length;$('#kg').innerHTML=l.map(card).join('')||`<div class="empty">${ic('list')}مفيش نتائج — جرّب تغيّر البحث أو الفلاتر</div>`;fx($('#kg'))}
 
-function openKid(row,again){const k=D.kids.find(x=>x.row==row);if(!k)return;const t=TIER[k.tier],f=(a,b)=>b!==''&&b!=null?`<div><small>${a}</small><b>${b}</b></div>`:'';
+function openKid(row,again,fn){const k=D.kids.find(x=>x.row==row);if(!k)return;const t=TIER[k.tier],f=(a,b)=>b!==''&&b!=null?`<div><small>${a}</small><b>${b}</b></div>`:'';
  if(!again)lastFocus=document.activeElement;
  $('#mc').innerHTML=`<div class="mh in"><div class="av ${k.g==='بنت'?'f':''}">${av(k)}</div><div><h2>${esc(k.name)}</h2><p class="meta">${k.id} · ${esc(k.cls)} · ${esc(k.year)}</p>${tag(t)}</div></div>
  <div class="kv">${f('حضور',k.P)+f('غياب',k.A)+f('بعذر',k.E)+f('النسبة',pc(k.pct))+f('غياب متتالي',k.streak)+f('آخر حضور',k.last?fdl(k.last):'—')+f('يروح لوحده؟',esc(k.alone))+f('النوع',k.g==='بنت'?'بنت':'ولد')}</div>
@@ -130,8 +130,8 @@ function openKid(row,again){const k=D.kids.find(x=>x.row==row);if(!k)return;cons
  ${k.notes?`<p class="mp">${ic('note')}<span>${esc(k.notes)}</span></p>`:''}<div style="display:flex;gap:6px;flex-wrap:wrap">${btns(k)}</div>
  <div class="nt"><h3>${ic('note')}ملاحظات جديدة</h3>${k.pn.map(n=>`<div class="pnote"><span class="d">${esc(n.date)}</span><span>${esc(n.text)}</span><button class="b sm" data-delnote="${n.id}" data-r="${k.row}" aria-label="حذف الملاحظة">${ic('close')}</button></div>`).join('')}<div class="addn"><input type="date" id="nd" value="${dayKey()}" aria-label="تاريخ الملاحظة"><textarea id="ntx" rows="2" placeholder="اكتب ملاحظة…" aria-label="الملاحظة"></textarea><button class="b pri" data-addnote="${k.row}">${ic('plus')}إضافة ملاحظة</button></div><p class="sub" style="margin-top:8px">بتتحفظ على الجهاز ده لحد ما تنقلها للإكسيل من صفحة «للإكسيل».</p></div>
  <div class="tl">${k.att.map((v,i)=>v?`<span class="${v==='ح'?'ok':v==='غ'?'no':'ex'}${k.pd[i]?' pd':''}">${fd(D.dates[i])} ${v}</span>`:'').join('')}</div>`;
- $('#modal').hidden=false;document.body.style.overflow='hidden';if(!again)$('#mx').focus()}
-const closeM=()=>{if($('#modal').hidden)return;$('#modal').hidden=true;document.body.style.overflow='';if(lastFocus&&lastFocus.focus)lastFocus.focus()};
+ $('#modal').hidden=false;document.body.style.overflow='hidden';if(fn){const t=$('#ntx');t.scrollIntoView({block:'center'});t.focus()}else if(!again)$('#mx').focus()}
+const closeM=()=>{if($('#modal').hidden)return;$('#modal').hidden=true;document.body.style.overflow='';if($('#rl')){renderRec();return}if(lastFocus&&lastFocus.focus)lastFocus.focus()};
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
 function fx(r=view){$$('.rv:not(.in)',r).forEach(e=>io.observe(e));
@@ -225,29 +225,19 @@ const GHK='b3_gh';
 const ghCfg=()=>{try{return JSON.parse(localStorage.getItem(GHK))||{}}catch(e){return{}}};
 const ghGuess=()=>location.hostname.endsWith('.github.io')?location.hostname.split('.')[0]+'/'+(location.pathname.split('/')[1]||location.hostname):'';
 const stamp=()=>{const t=cairoNow(),h=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date()).replace(':','-');return t.year+'-'+t.month+'-'+t.day+'_'+h};
-function recordsCSV(){
- const order={};D.kids.forEach(k=>order[k.cls+'|'+k.name]=k.row);
- const tm=t=>t?new Date(t).toLocaleString('en-GB',{timeZone:'Africa/Cairo',hour12:false}):'';
- const st={'ح':'حاضر','غ':'غائب','ع':'معتذر','':'مسح'},cs=v=>'"'+String(v).replace(/"/g,'""')+'"';
- const att=Object.entries(PEND.att).map(([key,p])=>{const parts=key.split('|'),iso=parts.pop(),cls=parts.shift(),name=parts.join('|');return{iso,cls,name,row:order[cls+'|'+name]||0,v:p.v,t:p.t}})
-  .sort((x,y)=>x.iso.localeCompare(y.iso)||x.cls.localeCompare(y.cls,'ar')||x.row-y.row)
-  .map(x=>['حضور',noteDate(x.iso),new Date(x.iso).toLocaleDateString('ar-EG',{weekday:'long',timeZone:'UTC'}),x.cls,x.name,st[x.v],tm(x.t)]);
- const nts=PEND.notes.map(n=>{const i=n.key.indexOf('|');return['ملاحظة',n.date,'',n.key.slice(0,i),n.key.slice(i+1),n.text,tm(n.t)]});
- return'﻿'+[['النوع','التاريخ','اليوم','الفصل','الاسم','الحالة / الملاحظة','وقت التسجيل'],...att,...nts].map(r=>r.map(cs).join(',')).join('\r\n')}
-function recordsWB(){
- const order={};D.kids.forEach(k=>order[k.cls+'|'+k.name]=k.row);
- const tm=t=>t?new Date(t).toLocaleString('ar-EG',{timeZone:'Africa/Cairo',dateStyle:'short',timeStyle:'short'}):'';
- const st={'ح':'حاضر','غ':'غائب','ع':'معتذر','':'مسح'};
- const att=Object.entries(PEND.att).map(([key,p])=>{const parts=key.split('|'),iso=parts.pop(),cls=parts.shift(),name=parts.join('|');
-  return{iso,cls,name,row:order[cls+'|'+name]||0,v:p.v,t:p.t}}).sort((x,y)=>x.iso.localeCompare(y.iso)||x.cls.localeCompare(y.cls,'ar')||x.row-y.row)
-  .map(x=>({'التاريخ':noteDate(x.iso),'اليوم':new Date(x.iso).toLocaleDateString('ar-EG',{weekday:'long',timeZone:'UTC'}),'الفصل':x.cls,'الاسم':x.name,'الحالة':st[x.v],'وقت التسجيل':tm(x.t)}));
- const nts=PEND.notes.map(n=>{const i=n.key.indexOf('|');return{'تاريخ الملاحظة':n.date,'الفصل':n.key.slice(0,i),'الاسم':n.key.slice(i+1),'الملاحظة':n.text,'وقت التسجيل':tm(n.t)}});
- const wb=XLSX.utils.book_new(),mk=(rows,hd,w)=>{const ws=XLSX.utils.json_to_sheet(rows,{header:hd});ws['!cols']=w.map(x=>({wch:x}));return ws};
- XLSX.utils.book_append_sheet(wb,mk(att,['التاريخ','اليوم','الفصل','الاسم','الحالة','وقت التسجيل'],[12,10,12,34,10,20]),'الحضور');
- XLSX.utils.book_append_sheet(wb,mk(nts,['تاريخ الملاحظة','الفصل','الاسم','الملاحظة','وقت التسجيل'],[14,12,34,60,20]),'الملاحظات');
+function rosterData(){const today=dayKey(),js=D.dates.map((_,j)=>j).filter(j=>D.kids.some(k=>k.pd[j]));
+ return{js,val:(k,j)=>k.att[j]||(k.active&&dk(D.dates[j])<=today&&D.cls[k.cls].ks.some(x=>x.pd[j])?'غ':''),hdr:j=>fdl(D.dates[j])+' · عمود '+XLSX.utils.encode_col(9+j),nt:k=>k.pn.map(n=>n.date+': '+n.text).join(' | ')}}
+function recordsCSV(){const R=rosterData(),cs=v=>'"'+String(v).replace(/"/g,'""')+'"',rows=[['الفصل','الاسم',...R.js.map(R.hdr),'ملاحظات جديدة']];
+ D.classes.forEach(c=>D.cls[c].ks.slice(0,30).forEach(k=>rows.push([c,k.name,...R.js.map(j=>R.val(k,j)),R.nt(k)])));
+ return'﻿'+rows.map(r=>r.map(cs).join(',')).join('\r\n')}
+function recordsWB(){const R=rosterData(),wb=XLSX.utils.book_new(),tm=t=>t?new Date(t).toLocaleString('en-GB',{timeZone:'Africa/Cairo',hour12:false}):'';
+ const sheet=(rows,w,name)=>{const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=w.map(x=>({wch:x}));XLSX.utils.book_append_sheet(wb,ws,name.slice(0,31))};
+ D.classes.forEach(c=>sheet([['الاسم',...R.js.map(R.hdr),'ملاحظات جديدة'],...D.cls[c].ks.slice(0,30).map(k=>[k.name,...R.js.map(j=>R.val(k,j)),R.nt(k)])],[34,...R.js.map(()=>24),50],'حضور '+c));
+ sheet([['تاريخ الملاحظة','الفصل','الاسم','الملاحظة','وقت التسجيل'],...PEND.notes.map(n=>{const i=n.key.indexOf('|');return[n.date,n.key.slice(0,i),n.key.slice(i+1),n.text,tm(n.t)]})],[14,12,34,60,20],'الملاحظات');
+ sheet([['كل شيت «حضور …» فيه كل أطفال الفصل بنفس ترتيب شيت الحضور في الإكسيل.'],['اللي ما اتسجلش حضوره اتحسب غايب (غ). ح = حاضر، ع = معتذر.'],['انسخ عمود التاريخ (من تحت العنوان) والصقه في شيت «حضور <الفصل>» في العمود المكتوب في العنوان، بادئ من الصف 7.'],['الملاحظات الجديدة في آخر عمود وفي شيت «الملاحظات» (الصقها في عمود L في قاعدة البيانات).']],[110],'تعليمات');
  wb.Workbook={Views:[{RTL:true}]};return wb}
 function recCard(){const c=ghCfg(),ok=c.repo&&c.token;
- return`<div class="card sy rv"><div><h3>${ic('list')}ملف مستقل بالأسماء والحضور والتواريخ</h3><p class="sub" style="line-height:1.9">ملف إكسيل لوحده فيه كل اللي سجلته (الاسم، الفصل، التاريخ واليوم، الحالة، الملاحظات، ووقت التسجيل) من غير ما يلمس ملف النظام. تحفظه على الجهاز أو ترفعه على GitHub في فولدر <b dir="ltr">records</b>، وتنقله للنظام بعدين وقت ما تحب.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b pri" data-rec="dev">${ic('download')}حفظ على الجهاز (إكسيل)</button><button class="b" data-rec="csv">${ic('download')}ملف CSV عادي</button><button class="b" data-rec="gh">${ic('upload')}رفع على GitHub</button></div><p id="ghs" class="sub" role="status" aria-live="polite"></p>
+ return`<div class="card sy rv"><div><h3>${ic('list')}ملف مستقل بالأسماء والحضور والتواريخ</h3><p class="sub" style="line-height:1.9">ملف فيه كل أطفال كل فصل بنفس ترتيب شيت الحضور، وعمود لكل تاريخ سجلته (اللي ما اتسجلش حاضر بيتحسب غايب)، جاهز تنسخ العمود وتلصقه في شيت الحضور في الإكسيل. الملاحظات الجديدة بتاريخها في آخر عمود. تحفظه على الجهاز أو ترفعه على GitHub في فولدر <b dir="ltr">records</b>.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="b pri" data-rec="dev">${ic('download')}حفظ على الجهاز (إكسيل)</button><button class="b" data-rec="csv">${ic('download')}ملف CSV عادي</button><button class="b" data-rec="gh">${ic('upload')}رفع على GitHub</button></div><p id="ghs" class="sub" role="status" aria-live="polite"></p>
  <details id="ghd"><summary class="sub" style="cursor:pointer">${ok?'إعداد GitHub متظبط ✓ (تعديل)':'إعداد GitHub (مرة واحدة)'}</summary><div class="addn"><input id="ghr" dir="ltr" placeholder="اسم-الحساب/اسم-الريبو" value="${esc(c.repo||ghGuess())}" aria-label="الريبو"><input id="ght" type="password" dir="ltr" autocomplete="off" placeholder="${c.token?'التوكن محفوظ — اكتب جديد لتغييره':'التوكن (Personal access token)'}" aria-label="التوكن"><button class="b" data-ghsave>حفظ الإعداد</button>${ok?'<button class="b" data-ghclear>مسح الإعداد</button>':''}<p class="sub" style="line-height:1.9">GitHub ← Settings ← Developer settings ← Fine-grained tokens ← Generate: اختار الريبو ده بس، وصلاحية <b dir="ltr">Contents: Read and write</b>. التوكن بيتحفظ في المتصفح ده بس، ماتحطوش في أي ملف على الموقع.</p></div></details></div>`}
 document.addEventListener('click',async e=>{
  const r=e.target.closest('[data-rec]');
@@ -268,3 +258,5 @@ document.addEventListener('click',async e=>{
   try{localStorage.setItem(GHK,JSON.stringify({repo,token:tk}))}catch(_){}route();$('#ghs').textContent='اتحفظ الإعداد ✓';return}
  if(e.target.closest('[data-ghclear]')){try{localStorage.removeItem(GHK)}catch(_){}route()}
 });
+
+document.addEventListener('click',e=>{const n=e.target.closest('[data-note]');if(n)openKid(n.dataset.note,false,true)});
