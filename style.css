@@ -187,9 +187,9 @@ tfoot td:first-child{z-index:4}
 #modal{position:fixed;inset:0;z-index:50;background:rgba(10,24,25,.5);backdrop-filter:blur(6px);display:grid;place-items:center;padding:14px;animation:fi .25s}
 #modal[hidden]{display:none}
 @keyframes fi{from{opacity:0}}
-.sheet{position:relative;width:min(620px,100%);max-height:90vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 30px 80px -30px rgba(0,0,0,.5);animation:up .35s var(--ease)}
+.sheet{position:relative;width:min(620px,100%);max-height:90vh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:26px;box-shadow:0 30px 80px -30px rgba(0,0,0,.5);animation:up .35s var(--ease)}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
-.x{position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;z-index:2;color:var(--ink-2)}
+.x{position:sticky;top:8px;margin-inline-start:auto;margin-bottom:-40px;width:40px;height:40px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;z-index:2;color:var(--ink-2)}
 .x:hover{background:var(--line)}
 .mh{display:flex;gap:16px;align-items:center;margin-bottom:18px;padding-inline-start:40px}
 .mh .av{width:80px;height:80px;font-size:34px;flex:none}
@@ -211,7 +211,7 @@ tfoot td:first-child{z-index:4}
   .fi{grid-template-columns:40px 1fr}.fi .acts{grid-column:1/-1;justify-content:flex-start;padding-top:10px;border-top:1px solid var(--line)}
   .grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.st{padding:14px}
   .b{min-height:44px}.b.sm{min-height:40px}
-  #modal{padding:0}.sheet{border-radius:24px 24px 0 0;align-self:end;max-height:92vh}
+  #modal{padding:0}.sheet{border-radius:24px 24px 0 0;align-self:end;max-height:92vh;max-height:92dvh;padding-bottom:calc(26px + env(safe-area-inset-bottom))}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.ring .fg{stroke-dashoffset:var(--o)}.bar i{transform:none}}
 
